@@ -25,6 +25,7 @@ public class TeacherService {
 
     @Transactional
     public TeacherEntity createTeacher(CreateTeacherRequest createTeacherRequest) {
+        userService.validateUser(createTeacherRequest);
         CreateUserRequest createUserRequest = new CreateUserRequest();
         createUserRequest.setEmail(createTeacherRequest.getEmail());
         createUserRequest.setPassword(createTeacherRequest.getPassword());
@@ -35,7 +36,6 @@ public class TeacherService {
         TeacherEntity teacher = new TeacherEntity();
         teacher.setUserId(createdUser.getId());
         teacher.setSchoolAges(createTeacherRequest.getSchoolAges());
-        teacher.setEmail(createTeacherRequest.getEmail());
         teacher.setPhone(createTeacherRequest.getPhone());
         teacher.setAddress(createTeacherRequest.getAddress());
         teacher.setName(createTeacherRequest.getName());

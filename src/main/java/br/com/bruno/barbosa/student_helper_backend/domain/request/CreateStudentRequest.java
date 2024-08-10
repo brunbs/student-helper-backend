@@ -12,8 +12,8 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class CreateTeacherRequest extends CreateUserRequest{
+public class CreateStudentRequest extends CreateUserRequest{
 
-    private Set<SchoolAgeEnum> schoolAges;
+    private SchoolAgeEnum schoolAge;
 
 }

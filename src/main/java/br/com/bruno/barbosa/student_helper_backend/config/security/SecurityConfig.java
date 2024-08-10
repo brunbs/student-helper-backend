@@ -48,6 +48,7 @@ public class SecurityConfig {
                                 .requestMatchers("/teachers/register").permitAll()
                                 .requestMatchers("/schools/register").permitAll()
                                 .requestMatchers("/students/register").permitAll()
+                                .requestMatchers("/auth/login").permitAll()
                                 .requestMatchers("/users").permitAll()
                                 .requestMatchers("/school/**").hasRole(RoleEnum.SCHOOL.name())
                                 .requestMatchers("/teacher/**").hasRole(RoleEnum.TEACHER.name())

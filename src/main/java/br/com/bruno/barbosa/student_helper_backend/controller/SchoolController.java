@@ -2,6 +2,7 @@ package br.com.bruno.barbosa.student_helper_backend.controller;
 
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.SchoolEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.ResourceNotFoundException;
+import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateSchoolRequest;
 import br.com.bruno.barbosa.student_helper_backend.service.SchoolService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,8 @@ public class SchoolController {
     private SchoolService schoolService;
 
     @PostMapping
-    public ResponseEntity<SchoolEntity> createSchool(@RequestBody SchoolEntity schoolEntity) {
-        SchoolEntity savedSchool = schoolService.createSchool(schoolEntity);
+    public ResponseEntity<SchoolEntity> createSchool(@RequestBody CreateSchoolRequest createSchoolRequest) {
+        SchoolEntity savedSchool = schoolService.createSchool(createSchoolRequest);
         return ResponseEntity.ok(savedSchool);
     }
 

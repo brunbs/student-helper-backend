@@ -2,6 +2,7 @@ package br.com.bruno.barbosa.student_helper_backend.controller;
 
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.StudentEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.ResourceNotFoundException;
+import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateStudentRequest;
 import br.com.bruno.barbosa.student_helper_backend.service.StudentService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +18,9 @@ public class StudentController {
     @Autowired
     private StudentService studentService;
 
-    @PostMapping
-    public ResponseEntity<StudentEntity> createStudent(@RequestBody StudentEntity studentEntity) {
-        StudentEntity savedStudent = studentService.createStudent(studentEntity);
+    @PostMapping("/register")
+    public ResponseEntity<StudentEntity> createStudent(@RequestBody CreateStudentRequest createStudentRequest) {
+        StudentEntity savedStudent = studentService.createStudent(createStudentRequest);
         return ResponseEntity.ok(savedStudent);
     }
 

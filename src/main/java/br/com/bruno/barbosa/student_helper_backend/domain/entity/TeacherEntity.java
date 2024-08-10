@@ -21,6 +21,5 @@ public class TeacherEntity {
     private ObjectId userId;
     private String address;
     private String phone;
-    private String email;
     private Set<SchoolAgeEnum> schoolAges;
 }

@@ -18,6 +18,7 @@ public class User {
     private ObjectId id;
     private String username;
     private String password;
+    private String email;
     private ObjectId roleId;
     private boolean enabled;
 }

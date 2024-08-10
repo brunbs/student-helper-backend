@@ -16,6 +16,7 @@ public class SchoolEntity {
     private ObjectId id;
     private String name;
     private ObjectId userId;
-    private String endereco;
+    private String address;
+    private String phone;
 
 }
