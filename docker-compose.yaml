@@ -10,19 +10,7 @@ services:
       - mongo_data:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: localmongo
-      MONGO_INITDB_ROOT_PASSWORD: L0c@lM0ng0
-
-  mongo-express:
-    image: mongo-express:latest
-    container_name: mongo-express
-    ports:
-      - "8081:8081"
-    depends_on:
-      - mongo
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: localmongo
-      ME_CONFIG_MONGODB_ADMINPASSWORD: L0c@lM0ng0
-      ME_CONFIG_MONGODB_SERVER: mongo
+      MONGO_INITDB_ROOT_PASSWORD: L0calM0ng0
 
 volumes:
   mongo_data:
