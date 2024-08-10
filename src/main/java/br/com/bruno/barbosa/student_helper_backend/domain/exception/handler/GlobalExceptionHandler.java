@@ -1,4 +1,4 @@
-package br.com.bruno.barbosa.student_helper_backend.domain.exception;
+package br.com.bruno.barbosa.student_helper_backend.domain.exception.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -23,7 +23,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public void createUser(CreateUserRequest createUserRequest) {
+    public User createUser(CreateUserRequest createUserRequest) {
         Optional<Role> role = roleRepository.findByRoleName(createUserRequest.getRoleName().name());
                 if(role.isEmpty()) throw new RuntimeException("Role not found");
 
@@ -35,6 +35,6 @@ public class UserService {
         user.setRoleId(role.get().getId());
         user.setEnabled(true);
 
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 }

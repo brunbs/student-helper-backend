@@ -37,7 +37,7 @@ public class SecurityConfig {
         http
                 .cors(c -> c.configurationSource(request -> {
                     var cors = new CorsConfiguration();
-                    cors.setAllowedOrigins(List.of("http://localhost:4200")); // Adicione a URL do frontend aqui
+                    cors.setAllowedOrigins(List.of("http://localhost:8081"));
                     cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
                     cors.setAllowedHeaders(List.of("*"));
                     return cors;
@@ -45,7 +45,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/teachers/register").permitAll()
+                                .requestMatchers("/schools/register").permitAll()
+                                .requestMatchers("/students/register").permitAll()
                                 .requestMatchers("/users").permitAll()
                                 .requestMatchers("/school/**").hasRole(RoleEnum.SCHOOL.name())
                                 .requestMatchers("/teacher/**").hasRole(RoleEnum.TEACHER.name())
