@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -23,9 +24,11 @@ public class JwtFilter extends OncePerRequestFilter {
     private String jwtSecret;
 
     private final UserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
 
-    public JwtFilter(UserDetailsService userDetailsService) {
+    public JwtFilter(UserDetailsService userDetailsService, JwtUtil jwtUtil) {
         this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -47,13 +50,21 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } catch (UsernameNotFoundException e) {
-                // Log o erro e talvez definir o status da resposta se necessário
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             } catch (Exception e) {
-                // Log o erro e talvez definir o status da resposta se necessário
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private String parseJwt(HttpServletRequest request) {
+        String headerAuth = request.getHeader("Authorization");
+
+        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
+            return headerAuth.substring(7);
+        }
+
+        return null;
     }
 }

@@ -8,6 +8,10 @@ import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateUserRequ
 import br.com.bruno.barbosa.student_helper_backend.repository.RoleRepository;
 import br.com.bruno.barbosa.student_helper_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -55,6 +59,20 @@ public class UserService {
         }
         if(userRepository.findByEmail(createUserRequest.getEmail()).isPresent()){
             throw new UserAlreadyExistsException("E-mail já em uso");
+        }
+    }
+
+    public UserDetails getUserFromToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UsernameNotFoundException("Usuário não encontrado ou não autenticado.");
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails) {
+            return (UserDetails) principal;
+        } else {
+            throw new UsernameNotFoundException("Usuário não encontrado ou não autenticado.");
         }
     }
 }
