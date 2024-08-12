@@ -1,5 +1,7 @@
 package br.com.bruno.barbosa.student_helper_backend.service;
 
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.TeacherDto;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.UserDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.TeacherEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.User;
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.RoleEnum;
@@ -9,6 +11,7 @@ import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateUserRequ
 import br.com.bruno.barbosa.student_helper_backend.repository.TeacherRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,5 +62,16 @@ public class TeacherService {
             throw new ResourceNotFoundException("Teacher not found with id " + id);
         }
         teacherRepository.deleteById(id);
+    }
+
+    public TeacherDto findLoggedTeacher() {
+        UserDto userFromToken = userService.getUserFromToken();
+        Optional<TeacherEntity> foundTeacher = teacherRepository.findByUserId(userFromToken.getId());
+        if(foundTeacher.isEmpty()) {
+            throw new UsernameNotFoundException("Teacher not found with given username");
+        }
+        TeacherDto teacherDto = new TeacherDto(userFromToken);
+        teacherDto.setId(foundTeacher.get().getId());
+        return teacherDto;
     }
 }
