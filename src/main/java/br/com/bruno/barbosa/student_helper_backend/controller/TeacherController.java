@@ -4,8 +4,10 @@ import br.com.bruno.barbosa.student_helper_backend.domain.entity.TeacherEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.ResourceNotFoundException;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateAppointmentRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateTeacherRequest;
+import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentsListResponse;
 import br.com.bruno.barbosa.student_helper_backend.service.AppointmentService;
 import br.com.bruno.barbosa.student_helper_backend.service.TeacherService;
+import jakarta.websocket.server.PathParam;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -60,5 +62,12 @@ public class TeacherController {
     public ResponseEntity<Void> createAppointments(@RequestBody List<CreateAppointmentRequest> appointmentRequests) {
         appointmentService.createAppointments(appointmentRequests);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/appointments")
+    public ResponseEntity<AppointmentsListResponse> getTeachersAppointments(@PathParam("month") String month,
+                                                                            @PathParam("year") String year) {
+        AppointmentsListResponse teachersAppointments = appointmentService.getTeachersAppointments(month, year);
+        return ResponseEntity.ok(teachersAppointments);
     }
 }
