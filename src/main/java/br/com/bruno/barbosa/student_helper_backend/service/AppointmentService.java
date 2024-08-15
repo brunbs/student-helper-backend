@@ -1,10 +1,8 @@
 package br.com.bruno.barbosa.student_helper_backend.service;
 
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.StudentDto;
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.TeacherDto;
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.UserDto;
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.WeekInfoDto;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.*;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.AppointmentEntity;
+import br.com.bruno.barbosa.student_helper_backend.domain.entity.StudentEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.AppointmentStatusEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.RoleEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentException;
@@ -121,6 +119,13 @@ public class AppointmentService {
         List<AppointmentEntity> foundAppointments = appointmentRepository.findAllByTeacherIdAndDateBetween(
                 loggedTeacher.getId(), startDate, endDate);
 
+        List<AppointmentInfoDto> appointmentInfos = foundAppointments.stream().map(AppointmentInfoDto::new).toList();
+        appointmentInfos.forEach(appointment -> {
+            if(appointment.getStudentId() != null) {
+                studentService.getStudent(appointment.getStudentId()).ifPresent(studentEntity -> appointment.setStudentName(studentEntity.getName()));
+            }
+        });
+
         List<WeekInfoDto> weeksInMonth = DateUtils.getWeeksInMonth(yearInt, monthInt);
 
         for (WeekInfoDto weekInfoDto : weeksInMonth) {
@@ -128,8 +133,8 @@ public class AppointmentService {
             weekResponse.setStartDay(weekInfoDto.getStartDate());
             weekResponse.setEndDay(weekInfoDto.getEndDate());
 
-            weekResponse.setAppointments(foundAppointments.stream().filter(appointment -> {
-                        LocalDate appointmentDate = appointment.getDate(); // Agora é LocalDate diretamente
+            weekResponse.setAppointments(appointmentInfos.stream().filter(appointment -> {
+                        LocalDate appointmentDate = appointment.getDate();
                         LocalDate weekStart = weekInfoDto.getStartDate();
                         LocalDate weekEnd = weekInfoDto.getEndDate();
                         return (appointmentDate.isEqual(weekStart) || appointmentDate.isAfter(weekStart)) &&
@@ -143,6 +148,16 @@ public class AppointmentService {
         AppointmentsListResponse response = new AppointmentsListResponse();
         response.setWeeksAppointments(weekAppointmentsResponses);
         return response;
+    }
+
+    public void openAppointment(ObjectId appointmentId) {
+        Optional<AppointmentEntity> foundAppointment = appointmentRepository.findById(appointmentId);
+        if(foundAppointment.isEmpty()) {
+            throw new AppointmentNotFoundException("Agendamento não encontrado.");
+        }
+        foundAppointment.get().setStudentId(null);
+        foundAppointment.get().setStatus(AppointmentStatusEnum.AVAILABLE.name());
+        appointmentRepository.save(foundAppointment.get());
     }
 
 }

@@ -32,4 +32,10 @@ public class AppointmentController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/{appointmentId}/open")
+    ResponseEntity<Void> openAppointment(@PathVariable ObjectId appointmentId) {
+        appointmentService.openAppointment(appointmentId);
+        return ResponseEntity.ok().build();
+    }
+
 }
