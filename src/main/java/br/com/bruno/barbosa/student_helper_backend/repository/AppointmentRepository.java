@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface AppointmentRepository extends MongoRepository<AppointmentEntity, ObjectId> {
 
-    List<AppointmentEntity> findAllByTeacherIdAndDateBetween(ObjectId teacherId, LocalDate startDate, LocalDate endDate);
+    List<AppointmentEntity> findAllByTeacherIdAndDateBetweenOrderByDateAsc(ObjectId teacherId, LocalDate startDate, LocalDate endDate);
 
 }

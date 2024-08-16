@@ -24,7 +24,6 @@ public class AppointmentInfoDto {
     private String studentName;
     private String teacherName;
     private String lessonUrl;
-    private String url;
 
     public AppointmentInfoDto(AppointmentEntity appointmentEntity) {
         this.appointmentId = appointmentEntity.getId().toString();
@@ -33,7 +32,7 @@ public class AppointmentInfoDto {
         this.status = appointmentEntity.getStatus();
         this.teacherId = appointmentEntity.getTeacherId();
         this.studentId = appointmentEntity.getStudentId();
-        this.url = appointmentEntity.getLessonUrl();
+        this.lessonUrl = appointmentEntity.getLessonUrl();
     }
 
 }

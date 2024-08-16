@@ -117,7 +117,7 @@ public class AppointmentService {
         LocalDate endDate = lastDayOfMonth.plusDays(6 - lastDayOfMonth.getDayOfWeek().getValue());
 
         // Busca todas as consultas no intervalo ajustado
-        List<AppointmentEntity> foundAppointments = appointmentRepository.findAllByTeacherIdAndDateBetween(
+        List<AppointmentEntity> foundAppointments = appointmentRepository.findAllByTeacherIdAndDateBetweenOrderByDateAsc(
                 loggedTeacher.getId(), startDate, endDate);
 
         List<AppointmentInfoDto> appointmentInfos = foundAppointments.stream().map(AppointmentInfoDto::new).toList();
