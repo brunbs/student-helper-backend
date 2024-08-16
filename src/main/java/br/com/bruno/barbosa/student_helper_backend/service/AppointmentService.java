@@ -7,6 +7,7 @@ import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.Appointmen
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.RoleEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentException;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentNotFoundException;
+import br.com.bruno.barbosa.student_helper_backend.domain.exception.handler.NotAuthorizedException;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateAppointmentRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentResponse;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentsListResponse;
@@ -157,6 +158,31 @@ public class AppointmentService {
         }
         foundAppointment.get().setStudentId(null);
         foundAppointment.get().setStatus(AppointmentStatusEnum.AVAILABLE.name());
+        appointmentRepository.save(foundAppointment.get());
+    }
+
+    public void closeAppointment(ObjectId appointmentId) {
+        TeacherDto loggedTeacher = teacherService.findLoggedTeacher();
+        Optional<AppointmentEntity> foundAppointment = appointmentRepository.findById(appointmentId);
+        if(foundAppointment.isEmpty()) {
+            throw new AppointmentNotFoundException("Agendamento não encontrado.");
+        }
+        if(!foundAppointment.get().getTeacherId().equals(loggedTeacher.getId())) {
+            throw new NotAuthorizedException("Apenas o professor do atendimento pode alterar o atendimento.");
+        }
+        appointmentRepository.delete(foundAppointment.get());
+    }
+
+    public void addLinkToAppointment(ObjectId appointmentId, String url) {
+        TeacherDto loggedTeacher = teacherService.findLoggedTeacher();
+        Optional<AppointmentEntity> foundAppointment = appointmentRepository.findById(appointmentId);
+        if(foundAppointment.isEmpty()) {
+            throw new AppointmentNotFoundException("Agendamento não encontrado.");
+        }
+        if(!foundAppointment.get().getTeacherId().equals(loggedTeacher.getId())) {
+            throw new NotAuthorizedException("Apenas o professor do atendimento pode alterar o atendimento.");
+        }
+        foundAppointment.get().setLessonUrl(url);
         appointmentRepository.save(foundAppointment.get());
     }
 

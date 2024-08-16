@@ -1,14 +1,14 @@
 package br.com.bruno.barbosa.student_helper_backend.controller;
 
+import br.com.bruno.barbosa.student_helper_backend.domain.request.EditAppointmentRequest;
 import br.com.bruno.barbosa.student_helper_backend.service.AppointmentService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@RestController("appointments")
+@RestController
+@RequestMapping("/appointments")
 public class AppointmentController {
 
     @Autowired
@@ -35,6 +35,18 @@ public class AppointmentController {
     @PostMapping("/{appointmentId}/open")
     ResponseEntity<Void> openAppointment(@PathVariable ObjectId appointmentId) {
         appointmentService.openAppointment(appointmentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{appointmentId}/close")
+    ResponseEntity<Void> closeAppointment(@PathVariable ObjectId appointmentId) {
+        appointmentService.closeAppointment(appointmentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{appointmentId}/addlink")
+    ResponseEntity<Void> addLinkToAppointment(@PathVariable ObjectId appointmentId, @RequestBody EditAppointmentRequest editAppointmentRequest) {
+        appointmentService.addLinkToAppointment(appointmentId, editAppointmentRequest.getUrl());
         return ResponseEntity.ok().build();
     }
 

@@ -56,6 +56,7 @@ public class SecurityConfig {
                                 .requestMatchers("/teacher/**").hasRole(RoleEnum.TEACHER.name())
                                 .requestMatchers("/student/**").hasRole(RoleEnum.STUDENT.name())
                                 .requestMatchers("/teacher/**").authenticated()
+                                .requestMatchers("/appointments/**").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
