@@ -19,9 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.YearMonth;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -134,15 +132,38 @@ public class AppointmentService {
             weekResponse.setStartDay(weekInfoDto.getStartDate());
             weekResponse.setEndDay(weekInfoDto.getEndDate());
 
-            weekResponse.setAppointments(appointmentInfos.stream().filter(appointment -> {
-                        LocalDate appointmentDate = appointment.getDate();
-                        LocalDate weekStart = weekInfoDto.getStartDate();
-                        LocalDate weekEnd = weekInfoDto.getEndDate();
-                        return (appointmentDate.isEqual(weekStart) || appointmentDate.isAfter(weekStart)) &&
-                                (appointmentDate.isEqual(weekEnd) || appointmentDate.isBefore(weekEnd));
-                    })
-                    .map(AppointmentResponse::new)
-                    .toList());
+            List<AppointmentResponse> weekAppointments = new ArrayList<>();
+
+            // Gerar todos os horários para o intervalo de datas
+            for (LocalDate date = weekInfoDto.getStartDate(); !date.isAfter(weekInfoDto.getEndDate()); date = date.plusDays(1)) {
+                for (int hour = 8; hour <= 22; hour++) {
+                    LocalTime time = LocalTime.of(hour, 0);
+                    LocalDateTime appointmentDateTime = LocalDateTime.of(date, time);
+
+                    LocalDate finalDate = date;
+                    // Verifique se o atendimento já existe no banco de dados
+                    AppointmentEntity existingAppointment = appointmentRepository.findByTeacherIdAndDateAndTime(
+                            loggedTeacher.getId(), finalDate, time.toString());
+
+                    if (existingAppointment != null) {
+                        weekAppointments.add(new AppointmentResponse(new AppointmentInfoDto(existingAppointment)));
+                    } else {
+                        // Adicionar o horário como CLOSED
+                        AppointmentEntity newAppointment = new AppointmentEntity();
+                        newAppointment.setTeacherId(loggedTeacher.getId());
+                        newAppointment.setDate(finalDate);
+                        newAppointment.setTime(time.toString());
+                        newAppointment.setStatus(AppointmentStatusEnum.CLOSED.name());
+                        AppointmentEntity savedAppointment = appointmentRepository.save(newAppointment);
+
+                        AppointmentInfoDto closedAppointment = new AppointmentInfoDto(savedAppointment);
+
+                        weekAppointments.add(new AppointmentResponse(closedAppointment));
+                    }
+                }
+            }
+
+            weekResponse.setAppointments(weekAppointments);
             weekAppointmentsResponses.add(weekResponse);
         }
 
@@ -170,7 +191,8 @@ public class AppointmentService {
         if(!foundAppointment.get().getTeacherId().equals(loggedTeacher.getId())) {
             throw new NotAuthorizedException("Apenas o professor do atendimento pode alterar o atendimento.");
         }
-        appointmentRepository.delete(foundAppointment.get());
+        foundAppointment.get().setStatus(AppointmentStatusEnum.CLOSED.name());
+        appointmentRepository.save(foundAppointment.get());
     }
 
     public void addLinkToAppointment(ObjectId appointmentId, String url) {

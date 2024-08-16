@@ -11,4 +11,5 @@ public interface AppointmentRepository extends MongoRepository<AppointmentEntity
 
     List<AppointmentEntity> findAllByTeacherIdAndDateBetweenOrderByDateAsc(ObjectId teacherId, LocalDate startDate, LocalDate endDate);
 
+    AppointmentEntity findByTeacherIdAndDateAndTime(ObjectId id, LocalDate finalDate, String string);
 }
