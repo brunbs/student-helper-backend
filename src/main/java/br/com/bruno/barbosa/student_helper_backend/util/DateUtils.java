@@ -16,7 +16,7 @@ public class DateUtils {
         LocalDate firstDayOfMonth = yearMonth.atDay(1);
         LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
 
-        // Ajusta para começar na semana (domingo anterior, se necessário)
+        // Ajusta para começar no domingo anterior, se necessário
         LocalDate currentStart = firstDayOfMonth;
         if (currentStart.getDayOfWeek() != DayOfWeek.SUNDAY) {
             currentStart = currentStart.minusDays(currentStart.getDayOfWeek().getValue() % 7);
@@ -42,15 +42,9 @@ public class DateUtils {
             currentStart = currentEnd.plusDays(1);
         }
 
-        // Verifica se precisamos adicionar uma semana para incluir dias do próximo mês
-        LocalDate nextMonthStart = YearMonth.of(year, monthNumber).plusMonths(1).atDay(1);
-        LocalDate lastStartOfMonth = weekInfos.get(weekInfos.size() - 1).getStartDate();
-        if (lastStartOfMonth.isBefore(nextMonthStart)) {
-            weekInfos.add(new WeekInfoDto(nextMonthStart, nextMonthStart.plusDays(6)));
-        }
-
         return weekInfos;
     }
+
 
     public static int convertTwoDigitYearToFullYear(int twoDigitYear) {
         int currentYear = LocalDate.now().getYear();
