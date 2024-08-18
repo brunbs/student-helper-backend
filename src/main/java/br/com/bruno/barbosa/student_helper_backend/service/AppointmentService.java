@@ -136,27 +136,22 @@ public class AppointmentService {
             for (LocalDate date = weekInfoDto.getStartDate(); !date.isAfter(weekInfoDto.getEndDate()); date = date.plusDays(1)) {
                 for (int hour = 8; hour <= 22; hour++) {
                     LocalTime time = LocalTime.of(hour, 0);
-                    LocalDateTime appointmentDateTime = LocalDateTime.of(date, time);
 
-                    LocalDate finalDate = date;
                     // Verifique se o atendimento já existe no banco de dados
                     AppointmentEntity existingAppointment = appointmentRepository.findByTeacherIdAndDateAndTime(
-                            loggedTeacher.getId(), finalDate, time.toString());
+                            loggedTeacher.getId(), date, time.toString());
 
                     if (existingAppointment != null) {
                         weekAppointments.add(new AppointmentResponse(new AppointmentInfoDto(existingAppointment)));
                     } else {
-                        // Adicionar o horário como CLOSED
-                        AppointmentEntity newAppointment = new AppointmentEntity();
-                        newAppointment.setTeacherId(loggedTeacher.getId());
-                        newAppointment.setDate(finalDate);
-                        newAppointment.setTime(time.toString());
-                        newAppointment.setStatus(AppointmentStatusEnum.CLOSED.name());
-                        AppointmentEntity savedAppointment = appointmentRepository.save(newAppointment);
+                        // Adicionar o horário como CLOSED se não existir
+                        AppointmentResponse closedAppointment = new AppointmentResponse();
+                        closedAppointment.setTeacherId(loggedTeacher.getId());
+                        closedAppointment.setDay(date);
+                        closedAppointment.setTime(time.toString());
+                        closedAppointment.setStatus(AppointmentStatusEnum.CLOSED.name());
 
-                        AppointmentInfoDto closedAppointment = new AppointmentInfoDto(savedAppointment);
-
-                        weekAppointments.add(new AppointmentResponse(closedAppointment));
+                        weekAppointments.add(closedAppointment);
                     }
                 }
             }
@@ -165,19 +160,24 @@ public class AppointmentService {
             weekAppointmentsResponses.add(weekResponse);
         }
 
-        AppointmentsListResponse response = new AppointmentsListResponse();
-        response.setWeeksAppointments(weekAppointmentsResponses);
-        return response;
+        return new AppointmentsListResponse(weekAppointmentsResponses);
     }
 
-    public void openAppointment(ObjectId appointmentId) {
-        Optional<AppointmentEntity> foundAppointment = appointmentRepository.findById(appointmentId);
-        if(foundAppointment.isEmpty()) {
-            throw new AppointmentNotFoundException("Agendamento não encontrado.");
+    public AppointmentResponse openAppointment(LocalDate date, String time) {
+        TeacherDto loggedTeacher = teacherService.findLoggedTeacher();
+
+        AppointmentEntity foundAppointment = appointmentRepository.findByTeacherIdAndDateAndTime(
+                loggedTeacher.getId(), date, time);
+        if(Objects.isNull(foundAppointment)) {
+            foundAppointment = new AppointmentEntity();
         }
-        foundAppointment.get().setStudentId(null);
-        foundAppointment.get().setStatus(AppointmentStatusEnum.AVAILABLE.name());
-        appointmentRepository.save(foundAppointment.get());
+        foundAppointment.setTeacherId(loggedTeacher.getId());
+        foundAppointment.setDate(date);
+        foundAppointment.setTime(time);
+        foundAppointment.setStudentId(null);
+        foundAppointment.setStatus(AppointmentStatusEnum.AVAILABLE.name());
+        AppointmentEntity savedAppointment = appointmentRepository.save(foundAppointment);
+        return new AppointmentResponse(savedAppointment);
     }
 
     public void closeAppointment(ObjectId appointmentId) {
@@ -241,15 +241,13 @@ public class AppointmentService {
 
                 appointmentResponses.add(new AppointmentResponse(existingAppointment));
             } else {
-                AppointmentEntity newAppointment = new AppointmentEntity();
-                newAppointment.setDate(today.toLocalDate());
-                newAppointment.setTime(formattedTime);
-                newAppointment.setStatus("CLOSED");
-                newAppointment.setTeacherId(loggedTeacher.getId());
+                AppointmentResponse closedAppointment = new AppointmentResponse();
+                closedAppointment.setTeacherId(loggedTeacher.getId());
+                closedAppointment.setDay(LocalDate.now());
+                closedAppointment.setTime(time.toString());
+                closedAppointment.setStatus(AppointmentStatusEnum.CLOSED.name());
 
-                appointmentRepository.save(newAppointment);
-
-                appointmentResponses.add(new AppointmentResponse(newAppointment));
+                appointmentResponses.add(closedAppointment);
             }
         }
 
