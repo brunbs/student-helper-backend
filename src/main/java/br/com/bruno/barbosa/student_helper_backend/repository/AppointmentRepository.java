@@ -5,6 +5,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AppointmentRepository extends MongoRepository<AppointmentEntity, ObjectId> {
@@ -12,4 +13,6 @@ public interface AppointmentRepository extends MongoRepository<AppointmentEntity
     List<AppointmentEntity> findAllByTeacherIdAndDateBetweenOrderByDateAsc(ObjectId teacherId, LocalDate startDate, LocalDate endDate);
 
     AppointmentEntity findByTeacherIdAndDateAndTime(ObjectId id, LocalDate finalDate, String string);
+
+    List<AppointmentEntity>findByTeacherIdAndDate(ObjectId id, LocalDateTime date);
 }

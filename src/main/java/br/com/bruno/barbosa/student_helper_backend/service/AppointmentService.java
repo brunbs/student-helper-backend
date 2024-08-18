@@ -20,10 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.bruno.barbosa.student_helper_backend.util.DateUtils.convertTwoDigitYearToFullYear;
@@ -206,6 +204,56 @@ public class AppointmentService {
         }
         foundAppointment.get().setLessonUrl(url);
         appointmentRepository.save(foundAppointment.get());
+    }
+
+    public List<AppointmentResponse> getTeacherTodaysAppointment() {
+        TeacherDto loggedTeacher = teacherService.findLoggedTeacher();
+        LocalDateTime today = LocalDateTime.now();
+
+        // Busca os agendamentos existentes no banco
+        List<AppointmentEntity> existingAppointments = appointmentRepository.findByTeacherIdAndDate(loggedTeacher.getId(), today);
+
+        // Extrai os horários existentes em uma lista para fácil comparação
+        Set<String> existingTimes = existingAppointments.stream()
+                .map(AppointmentEntity::getTime)
+                .collect(Collectors.toSet());
+
+        // Formata para criar novos horários
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        // Lista final de respostas
+        List<AppointmentResponse> appointmentResponses = new ArrayList<>();
+
+        // Gera a lista completa de horários do dia, das 08:00 às 22:00
+        LocalTime startTime = LocalTime.of(8, 0);
+        LocalTime endTime = LocalTime.of(22, 0);
+
+        for (LocalTime time = startTime; !time.isAfter(endTime); time = time.plusHours(1)) {
+            String formattedTime = time.format(timeFormatter);
+
+            // Verifica se já existe um agendamento para o horário
+            if (existingTimes.contains(formattedTime)) {
+                // Adiciona os agendamentos já existentes
+                AppointmentEntity existingAppointment = existingAppointments.stream()
+                        .filter(appointment -> appointment.getTime().equals(formattedTime))
+                        .findFirst()
+                        .orElseThrow(); // Deve sempre existir, pois foi filtrado antes
+
+                appointmentResponses.add(new AppointmentResponse(existingAppointment));
+            } else {
+                AppointmentEntity newAppointment = new AppointmentEntity();
+                newAppointment.setDate(today.toLocalDate());
+                newAppointment.setTime(formattedTime);
+                newAppointment.setStatus("CLOSED");
+                newAppointment.setTeacherId(loggedTeacher.getId());
+
+                appointmentRepository.save(newAppointment);
+
+                appointmentResponses.add(new AppointmentResponse(newAppointment));
+            }
+        }
+
+        return appointmentResponses;
     }
 
 }
