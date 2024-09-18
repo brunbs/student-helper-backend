@@ -1,5 +1,6 @@
 package br.com.bruno.barbosa.student_helper_backend.controller;
 
+import br.com.bruno.barbosa.student_helper_backend.domain.request.AppointmentFilterRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.EditAppointmentRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentResponse;
 import br.com.bruno.barbosa.student_helper_backend.service.AppointmentService;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/appointments")
@@ -55,6 +57,11 @@ public class AppointmentController {
     ResponseEntity<Void> addLinkToAppointment(@PathVariable ObjectId appointmentId, @RequestBody EditAppointmentRequest editAppointmentRequest) {
         appointmentService.addLinkToAppointment(appointmentId, editAppointmentRequest.getUrl());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/search")
+    ResponseEntity<List<AppointmentResponse>> searchAppointment(@RequestBody AppointmentFilterRequest filters) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByFilter(filters));
     }
 
 }

@@ -9,11 +9,14 @@ import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.Appointmen
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentException;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentNotFoundException;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.handler.NotAuthorizedException;
+import br.com.bruno.barbosa.student_helper_backend.domain.request.AppointmentFilterRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateAppointmentRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentResponse;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentsListResponse;
+import br.com.bruno.barbosa.student_helper_backend.domain.response.TeacherResponseToList;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.WeekAppointmentsResponse;
 import br.com.bruno.barbosa.student_helper_backend.repository.AppointmentRepository;
+import br.com.bruno.barbosa.student_helper_backend.repository.FilterRepository;
 import br.com.bruno.barbosa.student_helper_backend.util.DateUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,9 @@ public class AppointmentService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FilterRepository filterRepository;
 
     @Transactional
     public void createAppointments(List<CreateAppointmentRequest> appointmentRequests) {
@@ -269,6 +275,19 @@ public class AppointmentService {
                         .thenComparing(AppointmentEntity::getTime))
                 .map(AppointmentResponse::new)
                 .toList();
+    }
+
+    public List<AppointmentResponse> getAppointmentsByFilter(AppointmentFilterRequest filters) {
+        List<String> teacherIds = new ArrayList<>();
+        if(filters.getTeacherId() != null) {
+            teacherIds.add(filters.getTeacherId());
+        } else {
+            List<TeacherResponseToList> allAvailableTeachers = teacherService.findAllAvailableTeachers(filters.getSchoolAge());
+            for(TeacherResponseToList teacher : allAvailableTeachers) {
+                teacherIds.add(teacher.getTeacherId().toString());
+            }
+        }
+        return filterRepository.getAppointmentsByFilter(filters);
     }
 
 }

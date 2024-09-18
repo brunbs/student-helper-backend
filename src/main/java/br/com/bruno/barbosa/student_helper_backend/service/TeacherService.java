@@ -5,9 +5,11 @@ import br.com.bruno.barbosa.student_helper_backend.domain.dto.UserDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.TeacherEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.User;
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.RoleEnum;
+import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.SchoolAgeEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.ResourceNotFoundException;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateTeacherRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateUserRequest;
+import br.com.bruno.barbosa.student_helper_backend.domain.response.TeacherResponseToList;
 import br.com.bruno.barbosa.student_helper_backend.repository.TeacherRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -74,4 +77,10 @@ public class TeacherService {
         teacherDto.setId(foundTeacher.get().getId());
         return teacherDto;
     }
+
+    public List<TeacherResponseToList> findAllAvailableTeachers(SchoolAgeEnum schoolAge) {
+        List<TeacherEntity> teachers = teacherRepository.findAllBySchoolAgesContaining(schoolAge.name());
+        return teachers.stream().map(teacher -> new TeacherResponseToList(teacher.getId(), teacher.getName())).toList();
+    }
+
 }

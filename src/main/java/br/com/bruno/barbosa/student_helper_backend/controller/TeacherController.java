@@ -1,12 +1,15 @@
 package br.com.bruno.barbosa.student_helper_backend.controller;
 
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.StudentDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.TeacherEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.ResourceNotFoundException;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateAppointmentRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateTeacherRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentResponse;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentsListResponse;
+import br.com.bruno.barbosa.student_helper_backend.domain.response.TeacherResponseToList;
 import br.com.bruno.barbosa.student_helper_backend.service.AppointmentService;
+import br.com.bruno.barbosa.student_helper_backend.service.StudentService;
 import br.com.bruno.barbosa.student_helper_backend.service.TeacherService;
 import jakarta.websocket.server.PathParam;
 import org.bson.types.ObjectId;
@@ -25,6 +28,9 @@ public class TeacherController {
 
     @Autowired
     private AppointmentService appointmentService;
+
+    @Autowired
+    private StudentService studentService;
 
     @PostMapping("/register")
     public ResponseEntity<TeacherEntity> createTeacher(@RequestBody CreateTeacherRequest createTeacherRequest) {
