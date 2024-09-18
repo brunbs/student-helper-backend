@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 
@@ -28,7 +26,7 @@ public class AppointmentInfoDto {
     public AppointmentInfoDto(AppointmentEntity appointmentEntity) {
         this.appointmentId = appointmentEntity.getId().toString();
         this.date = appointmentEntity.getDate();
-        this.time = appointmentEntity.getTime();
+        this.time = appointmentEntity.getTime().toString();
         this.status = appointmentEntity.getStatus();
         this.teacherId = appointmentEntity.getTeacherId();
         this.studentId = appointmentEntity.getStudentId();

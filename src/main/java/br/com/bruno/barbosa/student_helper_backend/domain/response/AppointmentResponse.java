@@ -27,7 +27,7 @@ public class AppointmentResponse {
     public AppointmentResponse(AppointmentEntity appointmentEntity) {
         this.appointmentId = appointmentEntity.getId().toString();
         this.day = appointmentEntity.getDate();
-        this.time = appointmentEntity.getTime();
+        this.time = appointmentEntity.getTime().toString();
         this.status = appointmentEntity.getStatus();
         this.teacherId = appointmentEntity.getTeacherId();
         this.studentId = appointmentEntity.getStudentId();

@@ -1,10 +1,11 @@
 package br.com.bruno.barbosa.student_helper_backend.service;
 
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.*;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.AppointmentInfoDto;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.StudentDto;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.TeacherDto;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.WeekInfoDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.AppointmentEntity;
-import br.com.bruno.barbosa.student_helper_backend.domain.entity.StudentEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.AppointmentStatusEnum;
-import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.RoleEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentException;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentNotFoundException;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.handler.NotAuthorizedException;
@@ -19,13 +20,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.bruno.barbosa.student_helper_backend.util.DateUtils.convertTwoDigitYearToFullYear;
-import static br.com.bruno.barbosa.student_helper_backend.util.DateUtils.getLocalDateFromString;
 
 @Service
 public class AppointmentService {
@@ -51,7 +54,7 @@ public class AppointmentService {
             for (String time : request.getTimes()) {
                 AppointmentEntity appointment = new AppointmentEntity();
                 appointment.setDate(request.getDate());
-                appointment.setTime(time);
+                appointment.setTime(LocalTime.parse(time));
                 appointment.setStatus(AppointmentStatusEnum.AVAILABLE.name());
                 appointment.setTeacherId(loggedTeacher.getId());
                 appointments.add(appointment);
@@ -81,6 +84,7 @@ public class AppointmentService {
             throw new AppointmentNotFoundException("Agendamento não encontrado.");
         }
         foundAppointment.get().setStatus(AppointmentStatusEnum.AVAILABLE.name());
+        appointmentRepository.save(foundAppointment.get());
     }
 
     public void bookAppointment(ObjectId appointmentId) {
@@ -173,7 +177,7 @@ public class AppointmentService {
         }
         foundAppointment.setTeacherId(loggedTeacher.getId());
         foundAppointment.setDate(date);
-        foundAppointment.setTime(time);
+        foundAppointment.setTime(LocalTime.parse(time));
         foundAppointment.setStudentId(null);
         foundAppointment.setStatus(AppointmentStatusEnum.AVAILABLE.name());
         AppointmentEntity savedAppointment = appointmentRepository.save(foundAppointment);
@@ -214,7 +218,7 @@ public class AppointmentService {
         List<AppointmentEntity> existingAppointments = appointmentRepository.findByTeacherIdAndDate(loggedTeacher.getId(), today);
 
         // Extrai os horários existentes em uma lista para fácil comparação
-        Set<String> existingTimes = existingAppointments.stream()
+        Set<LocalTime> existingTimes = existingAppointments.stream()
                 .map(AppointmentEntity::getTime)
                 .collect(Collectors.toSet());
 
@@ -232,10 +236,10 @@ public class AppointmentService {
             String formattedTime = time.format(timeFormatter);
 
             // Verifica se já existe um agendamento para o horário
-            if (existingTimes.contains(formattedTime)) {
+            if (existingTimes.contains(LocalTime.parse(formattedTime))) {
                 // Adiciona os agendamentos já existentes
                 AppointmentEntity existingAppointment = existingAppointments.stream()
-                        .filter(appointment -> appointment.getTime().equals(formattedTime))
+                        .filter(appointment -> appointment.getTime().equals(LocalTime.parse(formattedTime)))
                         .findFirst()
                         .orElseThrow(); // Deve sempre existir, pois foi filtrado antes
 
@@ -252,6 +256,19 @@ public class AppointmentService {
         }
 
         return appointmentResponses;
+    }
+
+    public List<AppointmentResponse> getStudentBookedAppointments() {
+        StudentDto loggedStudent = studentService.findLoggedStudent();
+        LocalDate today = LocalDate.now();
+
+        List<AppointmentEntity> appointments = appointmentRepository.findByStudentIdAndDateGreaterThanEqualOrderByDateAscTimeAsc(loggedStudent.getId(), today);
+
+        return appointments.stream()
+                .sorted(Comparator.comparing(AppointmentEntity::getDate)
+                        .thenComparing(AppointmentEntity::getTime))
+                .map(AppointmentResponse::new)
+                .toList();
     }
 
 }
