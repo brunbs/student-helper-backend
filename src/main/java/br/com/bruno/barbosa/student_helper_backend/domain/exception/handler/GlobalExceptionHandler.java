@@ -44,4 +44,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(NotAuthorizedException.class)
+    public ResponseEntity<String> handleNotAuthorizedException(NotAuthorizedException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
 }

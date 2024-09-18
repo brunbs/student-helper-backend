@@ -1,12 +1,15 @@
 package br.com.bruno.barbosa.student_helper_backend.service;
 
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.UserDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.Role;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.User;
+import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.RoleEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.UserAlreadyExistsException;
-import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateStudentRequest;
+import br.com.bruno.barbosa.student_helper_backend.domain.exception.UserRoleNotFoundException;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateUserRequest;
 import br.com.bruno.barbosa.student_helper_backend.repository.RoleRepository;
 import br.com.bruno.barbosa.student_helper_backend.repository.UserRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -62,7 +65,7 @@ public class UserService {
         }
     }
 
-    public UserDetails getUserFromToken() {
+    public UserDetails getUserDetailsFromToken() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UsernameNotFoundException("Usuário não encontrado ou não autenticado.");
@@ -72,6 +75,36 @@ public class UserService {
         if (principal instanceof UserDetails) {
             return (UserDetails) principal;
         } else {
+            throw new UsernameNotFoundException("Usuário não encontrado ou não autenticado.");
+        }
+    }
+
+    public UserDto getUserFromToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UsernameNotFoundException("Usuário não encontrado ou não autenticado.");
+        }
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String username = userDetails.getUsername();
+        Optional<User> byUsername = userRepository.findByUsername(username);
+        if(byUsername.isEmpty()) {
+            throw new UsernameNotFoundException("Usuário não encontrado ou não autenticado.");
+        }
+        Optional<Role> userRole = roleRepository.findById(byUsername.get().getRoleId());
+        if(userRole.isEmpty()) {
+            throw new UserRoleNotFoundException("Função não encontrada");
+        }
+        UserDto foundUser = new UserDto();
+        foundUser.setId(byUsername.get().getId());
+        foundUser.setUsername(byUsername.get().getUsername());
+        foundUser.setEmail(byUsername.get().getEmail());
+        foundUser.setRole(RoleEnum.valueOf(userRole.get().getRoleName()));
+        return foundUser;
+    }
+
+    public void isUserAuthenticated() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
             throw new UsernameNotFoundException("Usuário não encontrado ou não autenticado.");
         }
     }

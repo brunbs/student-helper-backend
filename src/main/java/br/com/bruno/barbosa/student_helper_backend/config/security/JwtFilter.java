@@ -46,8 +46,10 @@ public class JwtFilter extends OncePerRequestFilter {
                 String username = claims.getSubject();
                 if (username != null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    if (userDetails != null) {
+                        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
             } catch (UsernameNotFoundException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -57,6 +59,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
+
 
     private String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");

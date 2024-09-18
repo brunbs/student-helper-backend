@@ -1,5 +1,8 @@
 package br.com.bruno.barbosa.student_helper_backend.service;
 
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.StudentDto;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.TeacherDto;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.UserDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.StudentEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.TeacherEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.User;
@@ -11,6 +14,7 @@ import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateUserRequ
 import br.com.bruno.barbosa.student_helper_backend.repository.StudentRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -59,5 +63,16 @@ public class StudentService {
             throw new ResourceNotFoundException("Student not found with id " + id);
         }
         studentRepository.deleteById(id);
+    }
+
+    public StudentDto findLoggedStudent() {
+        UserDto userFromToken = userService.getUserFromToken();
+        Optional<StudentEntity> foundStudent = studentRepository.findByUserId(userFromToken.getId());
+        if(foundStudent.isEmpty()) {
+            throw new UsernameNotFoundException("Student not found with given username");
+        }
+        StudentDto studentDto = new StudentDto(userFromToken);
+        studentDto.setId(foundStudent.get().getId());
+        return studentDto;
     }
 }
