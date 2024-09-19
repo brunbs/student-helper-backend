@@ -2,6 +2,7 @@ package br.com.bruno.barbosa.student_helper_backend.controller;
 
 import br.com.bruno.barbosa.student_helper_backend.domain.dto.StudentDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.StudentEntity;
+import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.AppointmentStatusEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.ResourceNotFoundException;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.AppointmentFilterRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateStudentRequest;
@@ -73,10 +74,11 @@ public class StudentController {
         return ResponseEntity.ok(allAvailableTeachers);
     }
 
-    @GetMapping("/appointments/search")
+    @PostMapping("/appointments/search")
     ResponseEntity<List<AppointmentResponse>> searchAppointment(@RequestBody AppointmentFilterRequest filters) {
         StudentDto loggedStudent = studentService.findLoggedStudent();
         filters.setSchoolAge(loggedStudent.getSchoolAge());
+        filters.setStatus(List.of(AppointmentStatusEnum.AVAILABLE.name()));
         return ResponseEntity.ok(appointmentService.getAppointmentsByFilter(filters));
     }
 }

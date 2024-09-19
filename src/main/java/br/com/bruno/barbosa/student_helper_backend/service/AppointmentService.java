@@ -275,14 +275,14 @@ public class AppointmentService {
     }
 
     public List<AppointmentResponse> getAppointmentsByFilter(AppointmentFilterRequest filters) {
-        List<String> teacherIds = new ArrayList<>();
+        List<ObjectId> teacherIds = new ArrayList<>();
 
         if(filters.getTeacherId() != null) {
             teacherIds.add(filters.getTeacherId());
         }
         List<TeacherResponseToList> allAvailableTeachers = teacherService.findAllAvailableTeachers(filters.getSchoolAge());
         for(TeacherResponseToList teacher : allAvailableTeachers) {
-            teacherIds.add(teacher.getTeacherId().toString());
+            teacherIds.add(teacher.getTeacherId());
         }
 
         AppointmentFiltersDto appointmentFiltersDto = new AppointmentFiltersDto(filters);

@@ -29,10 +29,7 @@ public class FilterRepository {
         Query query = new Query();
 
         if (filters.getTeacherId() != null && !filters.getTeacherId().isEmpty()) {
-            List<ObjectId> teacherIds = filters.getTeacherId().stream()
-                    .map(ObjectId::new) // Converte cada String para ObjectId
-                    .collect(Collectors.toList());
-            query.addCriteria(Criteria.where("teacherId").in(teacherIds));
+            query.addCriteria(Criteria.where("teacherId").in(filters.getTeacherId()));
         }
 
         if (filters.getDate() != null) {

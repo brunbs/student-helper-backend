@@ -4,6 +4,7 @@ import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.SchoolAgeE
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -14,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class AppointmentFilterRequest {
 
-    private String teacherId;
+    private ObjectId teacherId;
     private LocalDate date;
     private List<LocalTime> time;
     private List<String> status;
