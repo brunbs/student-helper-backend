@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Document(collection = "appointments")
 @AllArgsConstructor
@@ -18,7 +19,7 @@ public class AppointmentEntity {
     @Id
     private ObjectId id;
     private LocalDate date;
-    private String time;
+    private LocalTime time;
     private ObjectId teacherId;
     private String status;
     private ObjectId studentId;

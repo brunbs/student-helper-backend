@@ -3,6 +3,7 @@ package br.com.bruno.barbosa.student_helper_backend.repository;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.AppointmentEntity;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,4 +16,7 @@ public interface AppointmentRepository extends MongoRepository<AppointmentEntity
     AppointmentEntity findByTeacherIdAndDateAndTime(ObjectId id, LocalDate finalDate, String string);
 
     List<AppointmentEntity>findByTeacherIdAndDate(ObjectId id, LocalDateTime date);
+
+    @Query("{ 'studentId': ?0, 'date': { $gte: ?1 } }")
+    List<AppointmentEntity> findByStudentIdAndDateGreaterThanEqualOrderByDateAscTimeAsc(ObjectId studentId, LocalDate date);
 }

@@ -73,6 +73,7 @@ public class StudentService {
         }
         StudentDto studentDto = new StudentDto(userFromToken);
         studentDto.setId(foundStudent.get().getId());
+        studentDto.setSchoolAge(foundStudent.get().getSchoolAge());
         return studentDto;
     }
 }
