@@ -1,9 +1,9 @@
 package br.com.bruno.barbosa.student_helper_backend.repository;
 
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.AppointmentFiltersDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.AppointmentEntity;
-import br.com.bruno.barbosa.student_helper_backend.domain.request.AppointmentFilterRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentResponse;
-import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentsListResponse;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -14,9 +14,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FilterRepository {
@@ -24,12 +24,15 @@ public class FilterRepository {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public List<AppointmentResponse> getAppointmentsByFilter(AppointmentFilterRequest filters) {
+    public List<AppointmentResponse> getAppointmentsByFilter(AppointmentFiltersDto filters) {
 
         Query query = new Query();
 
         if (filters.getTeacherId() != null && !filters.getTeacherId().isEmpty()) {
-            query.addCriteria(Criteria.where("teacherId").is(filters.getTeacherId()));
+            List<ObjectId> teacherIds = filters.getTeacherId().stream()
+                    .map(ObjectId::new) // Converte cada String para ObjectId
+                    .collect(Collectors.toList());
+            query.addCriteria(Criteria.where("teacherId").in(teacherIds));
         }
 
         if (filters.getDate() != null) {

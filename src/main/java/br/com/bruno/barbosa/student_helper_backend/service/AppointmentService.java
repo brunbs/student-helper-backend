@@ -1,9 +1,6 @@
 package br.com.bruno.barbosa.student_helper_backend.service;
 
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.AppointmentInfoDto;
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.StudentDto;
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.TeacherDto;
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.WeekInfoDto;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.*;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.AppointmentEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.AppointmentStatusEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentException;
@@ -279,15 +276,24 @@ public class AppointmentService {
 
     public List<AppointmentResponse> getAppointmentsByFilter(AppointmentFilterRequest filters) {
         List<String> teacherIds = new ArrayList<>();
+
         if(filters.getTeacherId() != null) {
             teacherIds.add(filters.getTeacherId());
-        } else {
-            List<TeacherResponseToList> allAvailableTeachers = teacherService.findAllAvailableTeachers(filters.getSchoolAge());
-            for(TeacherResponseToList teacher : allAvailableTeachers) {
-                teacherIds.add(teacher.getTeacherId().toString());
-            }
         }
-        return filterRepository.getAppointmentsByFilter(filters);
+        List<TeacherResponseToList> allAvailableTeachers = teacherService.findAllAvailableTeachers(filters.getSchoolAge());
+        for(TeacherResponseToList teacher : allAvailableTeachers) {
+            teacherIds.add(teacher.getTeacherId().toString());
+        }
+
+        AppointmentFiltersDto appointmentFiltersDto = new AppointmentFiltersDto(filters);
+        appointmentFiltersDto.setTeacherId(teacherIds);
+
+        List<AppointmentResponse> appointmentsByFilter = filterRepository.getAppointmentsByFilter(appointmentFiltersDto);
+        for(AppointmentResponse appointment : appointmentsByFilter) {
+            Optional<TeacherResponseToList> foundTeacher = allAvailableTeachers.stream().filter(teacher -> teacher.getTeacherId().equals(appointment.getTeacherId())).findFirst();
+            foundTeacher.ifPresent(teacherResponseToList -> appointment.setTeacherName(teacherResponseToList.getName()));
+        }
+        return appointmentsByFilter;
     }
 
 }
