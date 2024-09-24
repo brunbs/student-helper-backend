@@ -1,14 +1,11 @@
 package br.com.bruno.barbosa.student_helper_backend.service;
 
 import br.com.bruno.barbosa.student_helper_backend.domain.dto.StudentDto;
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.TeacherDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.dto.UserDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.StudentEntity;
-import br.com.bruno.barbosa.student_helper_backend.domain.entity.TeacherEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.User;
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.RoleEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.ResourceNotFoundException;
-import br.com.bruno.barbosa.student_helper_backend.domain.exception.UserAlreadyExistsException;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateStudentRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateUserRequest;
 import br.com.bruno.barbosa.student_helper_backend.repository.StudentRepository;

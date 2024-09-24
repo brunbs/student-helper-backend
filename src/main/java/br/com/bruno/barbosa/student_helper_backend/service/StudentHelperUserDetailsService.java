@@ -32,10 +32,8 @@ public class StudentHelperUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Usuário não encontrado: " + username);
         }
 
-        // Buscar o papel do usuário
         Role role = roleRepository.findById(user.get().getRoleId()).orElseThrow(() -> new RuntimeException("Papel não encontrado"));
 
-        // Criar um conjunto de autoridades baseadas no papel do usuário
         Set<SimpleGrantedAuthority> authorities = new HashSet<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
 
@@ -43,9 +41,9 @@ public class StudentHelperUserDetailsService implements UserDetailsService {
                 user.get().getUsername(),
                 user.get().getPassword(),
                 user.get().isEnabled(),
-                true, // Account non expired
-                true, // Credentials non expired
-                true, // Account non locked
+                true,
+                true,
+                true,
                 authorities
         );
     }
