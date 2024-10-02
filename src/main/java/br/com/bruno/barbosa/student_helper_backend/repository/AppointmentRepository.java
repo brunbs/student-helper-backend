@@ -17,6 +17,9 @@ public interface AppointmentRepository extends MongoRepository<AppointmentEntity
 
     List<AppointmentEntity>findByTeacherIdAndDate(ObjectId id, LocalDateTime date);
 
+    @Query("{ 'teacherId' : ?0, 'date' : { '$gte' : ?1, '$lt' : ?2 } }")
+    List<AppointmentEntity>findByTeacherIdAndDateRange(ObjectId id, LocalDateTime start, LocalDateTime end);
+
     @Query("{ 'studentId': ?0, 'date': { $gte: ?1 } }")
     List<AppointmentEntity> findByStudentIdAndDateGreaterThanEqualOrderByDateAscTimeAsc(ObjectId studentId, LocalDate date);
 }

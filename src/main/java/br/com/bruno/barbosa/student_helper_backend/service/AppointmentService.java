@@ -2,6 +2,8 @@ package br.com.bruno.barbosa.student_helper_backend.service;
 
 import br.com.bruno.barbosa.student_helper_backend.domain.dto.*;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.AppointmentEntity;
+import br.com.bruno.barbosa.student_helper_backend.domain.entity.StudentEntity;
+import br.com.bruno.barbosa.student_helper_backend.domain.entity.TeacherEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.AppointmentStatusEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentException;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.AppointmentNotFoundException;
@@ -20,10 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -215,10 +214,16 @@ public class AppointmentService {
 
     public List<AppointmentResponse> getTeacherTodaysAppointment() {
         TeacherDto loggedTeacher = teacherService.findLoggedTeacher();
-        LocalDateTime today = LocalDateTime.now();
+        LocalDate targetDate = LocalDate.now();
+        ZonedDateTime startOfDayUTC = targetDate.atStartOfDay(ZoneOffset.UTC);
+        ZonedDateTime endOfDayUTC = targetDate.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC);
 
-        // Busca os agendamentos existentes no banco
-        List<AppointmentEntity> existingAppointments = appointmentRepository.findByTeacherIdAndDate(loggedTeacher.getId(), today);
+// Busca os agendamentos existentes no banco com o intervalo em UTC
+        List<AppointmentEntity> existingAppointments = appointmentRepository.findByTeacherIdAndDateRange(
+                loggedTeacher.getId(),
+                startOfDayUTC.toLocalDateTime(),  // Início do dia UTC (00:00:00)
+                endOfDayUTC.toLocalDateTime()     // Fim do dia UTC (23:59:59.999)
+        );
 
         // Extrai os horários existentes em uma lista para fácil comparação
         Set<LocalTime> existingTimes = existingAppointments.stream()
@@ -245,8 +250,12 @@ public class AppointmentService {
                         .filter(appointment -> appointment.getTime().equals(LocalTime.parse(formattedTime)))
                         .findFirst()
                         .orElseThrow(); // Deve sempre existir, pois foi filtrado antes
-
-                appointmentResponses.add(new AppointmentResponse(existingAppointment));
+                AppointmentResponse appointmentResponse = new AppointmentResponse(existingAppointment);
+                if(existingAppointment.getStudentId() != null) {
+                    Optional<StudentEntity> student = studentService.getStudent(existingAppointment.getStudentId());
+                    student.ifPresent(studentEntity -> appointmentResponse.setStudentName(studentEntity.getName()));
+                }
+                appointmentResponses.add(appointmentResponse);
             } else {
                 AppointmentResponse closedAppointment = new AppointmentResponse();
                 closedAppointment.setTeacherId(loggedTeacher.getId());
@@ -267,11 +276,17 @@ public class AppointmentService {
 
         List<AppointmentEntity> appointments = appointmentRepository.findByStudentIdAndDateGreaterThanEqualOrderByDateAscTimeAsc(loggedStudent.getId(), today);
 
-        return appointments.stream()
+        List<AppointmentResponse> appointmentResponseList = appointments.stream()
                 .sorted(Comparator.comparing(AppointmentEntity::getDate)
                         .thenComparing(AppointmentEntity::getTime))
                 .map(AppointmentResponse::new)
                 .toList();
+
+        appointmentResponseList.forEach(appointment -> {
+            Optional<TeacherEntity> teacher = teacherService.getTeacher(appointment.getTeacherId());
+            teacher.ifPresent(teacherEntity -> appointment.setTeacherName(teacherEntity.getName()));
+        });
+        return appointmentResponseList;
     }
 
     public List<AppointmentResponse> getAppointmentsByFilter(AppointmentFilterRequest filters) {

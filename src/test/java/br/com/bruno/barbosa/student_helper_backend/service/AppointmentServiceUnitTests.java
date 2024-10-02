@@ -263,12 +263,12 @@ class AppointmentServiceUnitTests {
         teacherDto.setId(new ObjectId());
         when(teacherService.findLoggedTeacher()).thenReturn(teacherDto);
 
-        when(appointmentRepository.findByTeacherIdAndDate(any(), any())).thenReturn(List.of());
+        when(appointmentRepository.findByTeacherIdAndDateRange(any(), any(), any())).thenReturn(List.of());
 
         List<AppointmentResponse> responses = appointmentService.getTeacherTodaysAppointment();
 
         assertNotNull(responses);
-        verify(appointmentRepository, times(1)).findByTeacherIdAndDate(any(), any());
+        verify(appointmentRepository, times(1)).findByTeacherIdAndDateRange(any(), any(), any());
     }
 
     @Test
