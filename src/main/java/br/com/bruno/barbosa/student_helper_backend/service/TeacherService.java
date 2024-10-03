@@ -52,12 +52,18 @@ public class TeacherService {
         return teacherRepository.findById(id);
     }
 
-    public TeacherEntity updateTeacher(ObjectId id, TeacherEntity teacherEntity) {
-        if (!teacherRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Teacher not found with id " + id);
+    public TeacherEntity updateTeacher(CreateTeacherRequest createTeacherRequest) {
+        TeacherDto loggedTeacher = findLoggedTeacher();
+        Optional<TeacherEntity> teacher = getTeacher(loggedTeacher.getId());
+        if(teacher.isEmpty()) {
+            throw new ResourceNotFoundException("Teacher not found");
         }
-        teacherEntity.setId(id);
-        return teacherRepository.save(teacherEntity);
+        teacher.get().setId(loggedTeacher.getId());
+        teacher.get().setName(createTeacherRequest.getName());
+        teacher.get().setPhone(createTeacherRequest.getPhone());
+        teacher.get().setAddress(createTeacherRequest.getAddress());
+        teacher.get().setSchoolAges(createTeacherRequest.getSchoolAges());
+        return teacherRepository.save(teacher.get());
     }
 
     public void deleteTeacher(ObjectId id) {
@@ -81,6 +87,11 @@ public class TeacherService {
     public List<TeacherResponseToList> findAllAvailableTeachers(SchoolAgeEnum schoolAge) {
         List<TeacherEntity> teachers = teacherRepository.findAllBySchoolAgesContaining(schoolAge.name());
         return teachers.stream().map(teacher -> new TeacherResponseToList(teacher.getId(), teacher.getName())).toList();
+    }
+
+    public TeacherEntity getTeacherProfile() {
+        TeacherDto loggedTeacher = findLoggedTeacher();
+        return getTeacher(loggedTeacher.getId()).get();
     }
 
 }

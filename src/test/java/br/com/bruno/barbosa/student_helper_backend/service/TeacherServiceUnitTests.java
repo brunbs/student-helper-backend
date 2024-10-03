@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -101,30 +102,36 @@ class TeacherServiceUnitTests {
   void testUpdateTeacher_Success() {
     ObjectId teacherId = new ObjectId();
     TeacherEntity teacherEntity = new TeacherEntity();
-    teacherEntity.setName("Updated Teacher");
+    teacherEntity.setName("editado");
 
-    when(teacherRepository.existsById(teacherId)).thenReturn(true);
+    CreateTeacherRequest request = new CreateTeacherRequest();
+    request.setName("editado");
+
+    UserDto userDto = new UserDto();
+    userDto.setId(teacherId);
+    userDto.setUserId(teacherId);
+
+    when(userService.getUserFromToken()).thenReturn(userDto);
+    when(teacherRepository.findByUserId(any())).thenReturn(Optional.of(teacherEntity));
+    when(teacherRepository.findById(any())).thenReturn(Optional.of(teacherEntity));
     when(teacherRepository.save(any(TeacherEntity.class))).thenReturn(teacherEntity);
 
-    TeacherEntity updatedTeacher = teacherService.updateTeacher(teacherId, teacherEntity);
+    TeacherEntity updatedTeacher = teacherService.updateTeacher(request);
 
     assertNotNull(updatedTeacher);
-    assertEquals("Updated Teacher", updatedTeacher.getName());
-    verify(teacherRepository, times(1)).existsById(teacherId);
+    assertEquals("editado", updatedTeacher.getName());
     verify(teacherRepository, times(1)).save(teacherEntity);
   }
 
   @Test
   void testUpdateTeacher_NotFound() {
-    ObjectId teacherId = new ObjectId();
-    TeacherEntity teacherEntity = new TeacherEntity();
+    CreateTeacherRequest request = new CreateTeacherRequest();
 
-    when(teacherRepository.existsById(teacherId)).thenReturn(false);
+    when(userService.getUserFromToken()).thenReturn(mock(UserDto.class));
 
-    assertThrows(ResourceNotFoundException.class,
-        () -> teacherService.updateTeacher(teacherId, teacherEntity));
+    assertThrows(UsernameNotFoundException.class,
+        () -> teacherService.updateTeacher(request));
 
-    verify(teacherRepository, times(1)).existsById(teacherId);
     verify(teacherRepository, times(0)).save(any(TeacherEntity.class));
   }
 

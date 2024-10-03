@@ -1,23 +1,27 @@
 package br.com.bruno.barbosa.student_helper_backend.controller;
 
-import br.com.bruno.barbosa.student_helper_backend.domain.dto.StudentDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.TeacherEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.ResourceNotFoundException;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateAppointmentRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.request.CreateTeacherRequest;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentResponse;
 import br.com.bruno.barbosa.student_helper_backend.domain.response.AppointmentsListResponse;
-import br.com.bruno.barbosa.student_helper_backend.domain.response.TeacherResponseToList;
 import br.com.bruno.barbosa.student_helper_backend.service.AppointmentService;
 import br.com.bruno.barbosa.student_helper_backend.service.StudentService;
 import br.com.bruno.barbosa.student_helper_backend.service.TeacherService;
 import jakarta.websocket.server.PathParam;
+import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/teachers")
@@ -45,10 +49,15 @@ public class TeacherController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TeacherEntity> updateTeacher(@PathVariable ObjectId id, @RequestBody TeacherEntity teacherEntity) {
+    @GetMapping("/profile")
+    public ResponseEntity<TeacherEntity> getTeacherProfile() {
+        return ResponseEntity.ok(teacherService.getTeacherProfile());
+    }
+
+    @PutMapping("/profile:update")
+    public ResponseEntity<TeacherEntity> updateTeacher(@RequestBody CreateTeacherRequest createTeacherRequest) {
         try {
-            TeacherEntity updatedTeacher = teacherService.updateTeacher(id, teacherEntity);
+            TeacherEntity updatedTeacher = teacherService.updateTeacher(createTeacherRequest);
             return ResponseEntity.ok(updatedTeacher);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
