@@ -125,7 +125,9 @@ public class AppointmentService {
         List<AppointmentInfoDto> appointmentInfos = foundAppointments.stream().map(AppointmentInfoDto::new).toList();
         appointmentInfos.forEach(appointment -> {
             if(appointment.getStudentId() != null) {
-                studentService.getStudent(appointment.getStudentId()).ifPresent(studentEntity -> appointment.setStudentName(studentEntity.getName()));
+                Optional<StudentEntity> student = studentService.getStudent(
+                    appointment.getStudentId());
+                student.ifPresent(studentEntity -> appointment.setStudentName(studentEntity.getName()));
             }
         });
 
@@ -148,7 +150,15 @@ public class AppointmentService {
                             loggedTeacher.getId(), date, time.toString());
 
                     if (existingAppointment != null) {
-                        weekAppointments.add(new AppointmentResponse(new AppointmentInfoDto(existingAppointment)));
+                        AppointmentResponse appointmentResponse = new AppointmentResponse(
+                            new AppointmentInfoDto(existingAppointment));
+                        if(existingAppointment.getStudentId() != null) {
+                            Optional<StudentEntity> student = studentService.getStudent(
+                                existingAppointment.getStudentId());
+                            student.ifPresent(studentEntity -> appointmentResponse.setStudentName(
+                                studentEntity.getName()));
+                        }
+                        weekAppointments.add(appointmentResponse);
                     } else {
                         // Adicionar o horário como CLOSED se não existir
                         AppointmentResponse closedAppointment = new AppointmentResponse();
