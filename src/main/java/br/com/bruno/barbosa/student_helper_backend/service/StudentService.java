@@ -1,8 +1,10 @@
 package br.com.bruno.barbosa.student_helper_backend.service;
 
 import br.com.bruno.barbosa.student_helper_backend.domain.dto.StudentDto;
+import br.com.bruno.barbosa.student_helper_backend.domain.dto.TeacherDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.dto.UserDto;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.StudentEntity;
+import br.com.bruno.barbosa.student_helper_backend.domain.entity.TeacherEntity;
 import br.com.bruno.barbosa.student_helper_backend.domain.entity.User;
 import br.com.bruno.barbosa.student_helper_backend.domain.enumeration.RoleEnum;
 import br.com.bruno.barbosa.student_helper_backend.domain.exception.ResourceNotFoundException;
@@ -47,12 +49,18 @@ public class StudentService {
         return studentRepository.findById(id);
     }
 
-    public StudentEntity updateStudent(ObjectId id, StudentEntity studentEntity) {
-        if (!studentRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Student not found with id " + id);
+    public StudentEntity updateStudent(CreateStudentRequest createStudentRequest) {
+        StudentDto loggedStudent = findLoggedStudent();
+        Optional<StudentEntity> student = getStudent(loggedStudent.getId());
+        if(student.isEmpty()) {
+            throw new ResourceNotFoundException("Student not found");
         }
-        studentEntity.setId(id);
-        return studentRepository.save(studentEntity);
+        student.get().setId(loggedStudent.getId());
+        student.get().setName(createStudentRequest.getName());
+        student.get().setPhone(createStudentRequest.getPhone());
+        student.get().setAddress(createStudentRequest.getAddress());
+        student.get().setSchoolAge(createStudentRequest.getSchoolAge());
+        return studentRepository.save(student.get());
     }
 
     public void deleteStudent(ObjectId id) {

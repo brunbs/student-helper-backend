@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .cors(c -> c.configurationSource(request -> {
                     var cors = new CorsConfiguration();
                     cors.setAllowedOrigins(List.of("http://localhost:8081"));
-                    cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+                    cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
                     cors.setAllowedHeaders(List.of("*"));
                     return cors;
                 }))

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -104,29 +105,34 @@ class StudentServiceUnitTests {
     ObjectId studentId = new ObjectId();
     StudentEntity studentEntity = new StudentEntity();
     studentEntity.setName("Updated Name");
+    CreateStudentRequest request = new CreateStudentRequest();
+    request.setName("Updated Name");
 
-    when(studentRepository.existsById(studentId)).thenReturn(true);
+    UserDto userDto = new UserDto();
+    userDto.setId(studentId);
+    userDto.setUserId(studentId);
+
+    when(userService.getUserFromToken()).thenReturn(userDto);
+    when(studentRepository.findByUserId(any())).thenReturn(Optional.of(studentEntity));
+    when(studentRepository.findById(any())).thenReturn(Optional.of(studentEntity));
     when(studentRepository.save(any(StudentEntity.class))).thenReturn(studentEntity);
 
-    StudentEntity updatedStudent = studentService.updateStudent(studentId, studentEntity);
+    StudentEntity updatedStudent = studentService.updateStudent(request);
 
     assertNotNull(updatedStudent);
     assertEquals("Updated Name", updatedStudent.getName());
-    verify(studentRepository, times(1)).existsById(studentId);
     verify(studentRepository, times(1)).save(studentEntity);
   }
 
   @Test
   void testUpdateStudent_NotFound() {
-    ObjectId studentId = new ObjectId();
-    StudentEntity studentEntity = new StudentEntity();
+    CreateStudentRequest request = new CreateStudentRequest();
 
-    when(studentRepository.existsById(studentId)).thenReturn(false);
+    when(userService.getUserFromToken()).thenReturn(mock(UserDto.class));
 
-    assertThrows(ResourceNotFoundException.class,
-        () -> studentService.updateStudent(studentId, studentEntity));
+    assertThrows(UsernameNotFoundException.class,
+        () -> studentService.updateStudent(request));
 
-    verify(studentRepository, times(1)).existsById(studentId);
     verify(studentRepository, times(0)).save(any(StudentEntity.class));
   }
 
